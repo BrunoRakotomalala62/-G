@@ -24,11 +24,23 @@ module.exports = {
           att.type === "photo" || att.type === "animated_image"
         );
         if (img?.url) imageUrl = img.url;
-      } else if (event.attachments?.length) {
+      }
+      
+      // If not found in reply, check current message
+      if (!imageUrl && event.attachments?.length) {
         const img = event.attachments.find(att =>
           att.type === "photo" || att.type === "animated_image"
         );
         if (img?.url) imageUrl = img.url;
+      }
+
+      // ✅ RECURSIVE SEARCH IN MESSAGE REPLY (Enhanced for ws3-fca)
+      if (!imageUrl && messageReply) {
+          // If the reply itself has no attachments, we try to see if the message being replied to has one
+          // In some versions of FCA, attachments are nested differently
+          const attachments = messageReply.attachments || [];
+          const img = attachments.find(att => att.type === "photo" || att.type === "animated_image");
+          if (img?.url) imageUrl = img.url;
       }
 
       // 📍 Logic: Image attached but no prompt
