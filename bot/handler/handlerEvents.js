@@ -275,11 +275,7 @@ module.exports = function (api, threadModel, userModel, dashBoardModel, globalMo
                                 return;
                         if (!command)
                                 if (!hideNotiMessage.commandNotFound)
-                                        return await message.reply(
-                                                commandName ?
-                                                        utils.getText({ lang: langCode, head: "handlerEvents" }, "commandNotFound", commandName, prefix) :
-                                                        utils.getText({ lang: langCode, head: "handlerEvents" }, "commandNotFound2", prefix)
-                                        );
+                                        return;
                                 else
                                         return true;
                         // ————————————— CHECK PERMISSION ———————————— //
