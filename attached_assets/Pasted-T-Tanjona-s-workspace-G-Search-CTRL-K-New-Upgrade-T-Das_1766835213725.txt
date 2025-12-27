@@ -1,0 +1,190 @@
+T
+Tanjona's workspace
+-G
+
+
+Search
+CTRL+
+K
+
+New
+
+Upgrade
+
+
+T
+Dashboard
+-G
+Events
+Settings
+MONITOR
+Logs
+Metrics
+MANAGE
+Environment
+Shell
+Scaling
+Previews
+Disk
+Jobs
+
+Changelog
+Invite a friend
+
+Contact support
+Render Status
+WEB SERVICE
+-G
+Node
+Free
+Upgrade your instance
+
+Connect
+
+Manual Deploy
+Service ID:
+srv-d57s50mr433s73etedlg
+
+BrunoRakotomalala62 / -G
+main
+https://g-r0vs.onrender.com
+
+Your free instance will spin down with inactivity, which can delay requests by 50 seconds or more.
+Upgrade now
+December 27, 2025 at 2:27 PM
+Live
+9b9961a
+Saved progress at the end of the loop Replit-Commit-Author: Agent Replit-Commit-Session-Id: 79ee9a19-d949-4958-aecc-0110f3b247ba Replit-Commit-Checkpoint-Type: full_checkpoint Replit-Commit-Event-Id: 3a47006a-3a67-48c6-9c47-8c47ab9f89a6 Replit-Commit-Screenshot-Url: https://storage.googleapis.com/screenshot-production-us-central1/7e0f2c43-619d-48ca-a9d4-fd11382f2442/79ee9a19-d949-4958-aecc-0110f3b247ba/cyuCItc Replit-Helium-Checkpoint-Created: true
+
+All logs
+Search
+Search
+
+Live tail
+GMT+3
+
+
+
+==> Cloning from https://github.com/BrunoRakotomalala62/-G
+==> Checking out commit 9b9961a7c52b212c8365c7852e740b1f4ab06297 in branch main
+==> Requesting Node.js version 16.x
+==> Using Node.js version 16.20.2 via /opt/render/project/src/package.json
+==> Node.js version 16.20.2 has reached end-of-life.
+==> Upgrade to a maintained version to receive important security updates.
+==> Information on maintained Node.js versions: https://nodejs.org/en/about/previous-releases
+==> Docs on specifying a Node.js version: https://render.com/docs/node-version
+==> Running build command 'npm install'...
+added 1233 packages, and audited 1234 packages in 22s
+152 packages are looking for funding
+  run `npm fund` for details
+54 vulnerabilities (16 low, 9 moderate, 25 high, 4 critical)
+To address issues that do not require attention, run:
+  npm audit fix
+To address all issues possible (including breaking changes), run:
+  npm audit fix --force
+Some issues need review, and may require choosing
+a different dependency.
+Run `npm audit` for details.
+==> Uploading build...
+==> Uploaded in 5.4s. Compression took 4.6s
+==> Build successful 🎉
+==> Setting WEB_CONCURRENCY=1 by default, based on available CPUs in the instance
+==> Deploying...
+==> Running 'node index.js'
+🌐 Web server running on port 10000
+⚡ Hacker Terminal Dashboard Active!
+==> Your service is live 🎉
+==> 
+==> ///////////////////////////////////////////////////////////
+==> 
+==> Available at your primary URL https://g-r0vs.onrender.com
+==> 
+==> ///////////////////////////////////////////////////////////
+]2;Goat Bot V2 - Made by NTKhang\─
+GOATBOT V2
+GoatBot V2@1.5.35- A simple Bot chat messenger use personal account
+Created by NTKhang with ♡
+Source code: https://github.com/ntkhang03/Goat-Bot-V2
+ALL VERSIONS NOT RELEASED HERE ARE FAKE
+ START LOGGING IN 
+18:28:50 27/12/2025  LOGIN FACEBOOK: Login in progress
+- Login with cookie array
+ws3-fca [LOG] Logging in...
+18:28:57 27/12/2025  LOGIN FACEBOOK: Successful login
+ BOT INFO 
+18:28:57 27/12/2025  NODE VERSION: v16.20.2
+18:28:57 27/12/2025  PROJECT VERSION: 1.5.35
+18:28:58 27/12/2025  BOT ID: 100029553424992 - null
+18:28:58 27/12/2025  PREFIX: -
+18:28:58 27/12/2025  LANGUAGE: en
+18:28:58 27/12/2025  BOT NICK NAME: GoatBot
+18:28:58 27/12/2025  CREDITS: April manalo - ws3-fca 3.5.2 implementation
+18:28:58 27/12/2025  REFRESH FBSTATE: Refreshed account.dev.txt file
+ DATABASE 
+- Connecting a SQLITE database
+18:29:00 27/12/2025  SQLITE: Successfully connected SQLITE database!
+18:29:00 27/12/2025  DATABASE: Loaded 0 group's data successfully!
+18:29:00 27/12/2025  DATABASE: Loaded 0 user's data successfully!
+ LOAD COMMANDS 
+ LOAD COMMANDS EVENT 
+ DASHBOARD 
+18:29:06 27/12/2025  DASHBOARD: An error occurred when opening the bot management page
+18:29:06 27/12/2025  DASHBOARD: Error: Can't find text: "Goat.googleApiRefreshTokenExpired"
+    at module.exports (/opt/render/project/src/dashboard/app.js:60:9)
+    at async /opt/render/project/src/bot/login/login.js:580:1
+─
+18:29:06 27/12/2025  NOTIFICATION: Currently there are some thieves who are editing the copyright of the source code and distributing it.
+[!] The source code should only be downloaded from the official github page: https://github.com/ntkhang03/Goat-Bot-V2
+[!] Thank you for using the project. Project created by ntkhang03 (https://github.com/ntkhang03)
+18:29:06 27/12/2025  SUCCESS: Launch bot successfully, start receiving messages from users
+18:29:06 27/12/2025  LOAD TIME: 27s
+ COPYRIGHT 
+COPYRIGHT: Project GoatBot v2 created by ntkhang03[](https://github.com/ntkhang03), please do not sell this source code or claim it as your own. Thank you!
+─
+18:29:06 27/12/2025  LISTEN_MQTT: ListenMQTT restart enabled every 1h
+18:29:06 27/12/2025  BOT_STARTED: Bot has been started successfully, start receiving messages from users
+─
+ws3-fca [LOG] Connecting to MQTT with new IDs... wss://edge-chat.messenger.com/chat?region=cln&sid=4880557175312170&cid=8c2f21c1-2151-4aca-98c9-c43fc401acf3
+ws3-fca [LOG] Successfully connected to MQTT.
+ws3-fca [LOG] Fetching account info...
+ws3-fca [LOG] Scheduled reconnect in 56 minutes...
+ws3-fca [LOG] Hello, Fanantenana Tsiory (100029553424992)
+18:30:10 27/12/2025  DATABASE: New Thread: 2002536470604213 | bot | sqlite
+MESSAGE: {
+  type: "message",
+  senderID: "100041841881488",
+  body: "help",
+  threadID: "2002536470604213",
+  messageID: "mid.$gAAcdS9r66bWhkNgDYGbX5K9OESV3",
+  offlineThreadingId: "7410643153441596791",
+  attachments: [],
+  mentions: {},
+  timestamp: "1766835010400",
+  isGroup: true,
+  participantIDs: "Array(3)"
+}
+MESSAGE: {
+  type: "message",
+  senderID: "100041841881488",
+  body: "ai bonjour",
+  threadID: "2002536470604213",
+  messageID: "mid.$gAAcdS9r66bWhkNgwE2bX5LqDlOTQ",
+  offlineThreadingId: "7410643201584063696",
+  attachments: [],
+  mentions: {},
+  timestamp: "1766835021843",
+  isGroup: true,
+  participantIDs: "Array(3)"
+}
+Need better ways to work with logs? Try theRender CLI, Render MCP Server, or set up a log stream integration 
+
+0 services selected:
+
+Move
+
+Generate Blueprint
+
+Resume
+
+Suspend
+
