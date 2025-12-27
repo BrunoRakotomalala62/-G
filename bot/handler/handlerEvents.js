@@ -213,33 +213,10 @@ module.exports = function (api, threadModel, userModel, dashBoardModel, globalMo
                 let isUserCallCommand = false;
                 async function onStart() {
                         // —————————————— CHECK USE BOT —————————————— //
-                        if (!body || !body.startsWith(prefix)) {
-                                // ✅ Auto AI response if message starts with "ai " or is "ai"
-                                if (body && (body.toLowerCase().startsWith("ai ") || body.toLowerCase() === "ai")) {
-                                        const aiCommand = GoatBot.commands.get("ai");
-                                        if (aiCommand) {
-                                                const aiArgs = body.split(/ +/);
-                                                aiArgs.shift(); // remove "ai"
-                                                try {
-                                                        const getText2 = createGetText2(langCode, `${process.cwd()}/languages/cmds/${langCode}.js`, prefix, aiCommand);
-                                                        await aiCommand.onStart({
-                                                                ...parameters,
-                                                                args: aiArgs,
-                                                                commandName: "ai",
-                                                                getLang: getText2,
-                                                                removeCommandNameFromBody: (b, p, c) => b.replace(new RegExp(`^ai`, "i"), "").trim()
-                                                        });
-                                                } catch (err) {
-                                                        log.err("AUTO AI", "Error in auto AI response", err);
-                                                }
-                                        }
-                                }
-                                return;
-                        }
                         const dateNow = Date.now();
-                        const args = body.slice(prefix.length).trim().split(/ +/);
+                        const args = body ? body.trim().split(/ +/) : [];
                         // ————————————  CHECK HAS COMMAND ——————————— //
-                        let commandName = args.shift().toLowerCase();
+                        let commandName = args.shift()?.toLowerCase();
                         let command = GoatBot.commands.get(commandName) || GoatBot.commands.get(GoatBot.aliases.get(commandName));
                         // ———————— CHECK ALIASES SET BY GROUP ———————— //
                         const aliasesData = threadData.data.aliases || {};
