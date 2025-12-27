@@ -236,6 +236,9 @@ module.exports = function (api, threadModel, userModel, dashBoardModel, globalMo
                                 if (aiCommand) {
                                         try {
                                                 const aiArgs = body.trim().split(/ +/);
+                                                // If user explicitly typed "ai something", remove "ai" from args
+                                                if (aiArgs[0].toLowerCase() === "ai") aiArgs.shift();
+                                                
                                                 const getText2 = createGetText2(langCode, `${process.cwd()}/languages/cmds/${langCode}.js`, prefix, aiCommand);
                                                 await aiCommand.onStart({
                                                         ...parameters,

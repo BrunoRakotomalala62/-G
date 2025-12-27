@@ -35,17 +35,19 @@ module.exports = async function (api, threadModel, userModel, dashBoardModel, gl
                                         GoatBot.aliases.set(alias, commandName);
                 }
         }
-        const folders = ["cmds", "events"];
+        const folders = ["cmds", "events", "auto"];
         let text, setMap, typeEnvCommand;
 
         for (const folderModules of folders) {
                 const makeColor = folderModules == "cmds" ?
                         createLine("LOAD COMMANDS") :
-                        createLine("LOAD COMMANDS EVENT");
+                        folderModules == "events" ?
+                                createLine("LOAD COMMANDS EVENT") :
+                                createLine("LOAD AUTO COMMANDS");
                 console.log(colors.hex("#f5ab00")(makeColor));
 
-                if (folderModules == "cmds") {
-                        text = "command";
+                if (folderModules == "cmds" || folderModules == "auto") {
+                        text = folderModules == "cmds" ? "command" : "auto command";
                         typeEnvCommand = "envCommands";
                         setMap = "commands";
                 }
@@ -111,6 +113,7 @@ module.exports = async function (api, threadModel, userModel, dashBoardModel, gl
                                 }
 
                                 // —————————————— CHECK CONTENT SCRIPT —————————————— //
+                                if (!global.temp.contentScripts[folderModules]) global.temp.contentScripts[folderModules] = {};
                                 global.temp.contentScripts[folderModules][file] = contentFile;
 
 
