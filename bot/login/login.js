@@ -253,109 +253,122 @@ return appState;
 }
 let spin;
 async function getAppStateToLogin() {
-let appState = [];
-if (!existsSync(dirAccount))
-return log.error("LOGIN FACEBOOK", getText('login', 'notFoundDirAccount', colors.green(dirAccount)));
-const accountText = readFileSync(dirAccount, "utf8");
-try {
-const splitAccountText = accountText.replace(/\|/g, '\n').split('\n').map(i => i.trim()).filter(i => i);
-if (accountText.startsWith('EAAAA')) {
-try {
-spin = createOraDots(getText('login', 'loginToken'));
-spin._start();
-appState = await require('./getFbstate.js')(accountText);
-}
-catch (err) {
-err.name = "TOKEN_ERROR";
-throw err;
-}
-}
-else {
-if (accountText.match(/^(?:\s*\w+\s*=\s*[^;]*;?)+/)) {
-spin = createOraDots(getText('login', 'loginCookieString'));
-spin._start();
-appState = accountText.split(';')
-.map(i => {
-const [key, value] = i.split('=');
-return {
-key: (key || "").trim(),
-value: (value || "").trim(),
-domain: "facebook.com",
-path: "/",
-hostOnly: true,
-creation: new Date().toISOString(),
-lastAccessed: new Date().toISOString()
-};
-})
-.filter(i => i.key && i.value && i.key != "x-referer");
-}
-else if (isNetScapeCookie(accountText)) {
-spin = createOraDots(getText('login', 'loginCookieNetscape'));
-spin._start();
-appState = netScapeToCookies(accountText);
-}
-else if (
-(splitAccountText.length == 2 || splitAccountText.length == 3) &&
-!splitAccountText.slice(0, 2).map(i => i.trim()).some(i => i.includes(' '))
-) {
-global.GoatBot.config.facebookAccount.email = splitAccountText[0];
-global.GoatBot.config.facebookAccount.password = splitAccountText[1];
-if (splitAccountText[2]) {
-const code2FATemp = splitAccountText[2].replace(/ /g, "");
-global.GoatBot.config.facebookAccount['2FASecret'] = code2FATemp;
-}
-writeFileSync(global.client.dirConfig, JSON.stringify(global.GoatBot.config, null, 2));
-}
-else {
-try {
-spin = createOraDots(getText('login', 'loginCookieArray'));
-spin._start();
-appState = JSON.parse(accountText);
-}
-catch (err) {
-const error = new Error(`${path.basename(dirAccount)} is invalid`);
-error.name = "ACCOUNT_ERROR";
-throw error;
-}
-if (appState.some(i => i.name))
-appState = appState.map(i => {
-i.key = i.name;
-delete i.name;
-return i;
-});
-else if (!appState.some(i => i.key)) {
-const error = new Error(`${path.basename(dirAccount)} is invalid`);
-error.name = "ACCOUNT_ERROR";
-throw error;
-}
-appState = appState
-.map(item => ({
-...item,
-domain: "facebook.com",
-path: "/",
-hostOnly: false,
-creation: new Date().toISOString(),
-lastAccessed: new Date().toISOString()
-}))
-.filter(i => i.key && i.value && i.key != "x-referer");
-}
-if (!await checkLiveCookie(appState.map(i => i.key + "=" + i.value).join("; "), facebookAccount.userAgent)) {
-const error = new Error("Cookie is invalid");
-error.name = "COOKIE_INVALID";
-throw error;
-}
-}
-}
-catch (err) {
-spin && spin._stop();
-if (err.name === "TOKEN_ERROR")
-log.err("LOGIN FACEBOOK", getText('login', 'tokenError', colors.green("EAAAA..."), colors.green(dirAccount)));
-else if (err.name === "COOKIE_INVALID")
-log.err("LOGIN FACEBOOK", getText('login', 'cookieError'));
-log.err("LOGIN FACEBOOK", getText('login', 'accountError'), err.message);
-process.exit();
-}
-return appState;
+        let appState = [];
+        if (process.env.FB_APPSTATE) {
+                try {
+                        spin = createOraDots(getText('login', 'loginCookieArray'));
+                        spin._start();
+                        appState = JSON.parse(process.env.FB_APPSTATE);
+                } catch (err) {
+                        log.err("LOGIN FACEBOOK", "FB_APPSTATE environment variable is invalid JSON");
+                        process.exit();
+                }
+        } else {
+                if (!existsSync(dirAccount))
+                        return log.error("LOGIN FACEBOOK", getText('login', 'notFoundDirAccount', colors.green(dirAccount)));
+                const accountText = readFileSync(dirAccount, "utf8");
+                try {
+                        const splitAccountText = accountText.replace(/\|/g, '\n').split('\n').map(i => i.trim()).filter(i => i);
+                        if (accountText.startsWith('EAAAA')) {
+                                try {
+                                        spin = createOraDots(getText('login', 'loginToken'));
+                                        spin._start();
+                                        appState = await require('./getFbstate.js')(accountText);
+                                }
+                                catch (err) {
+                                        err.name = "TOKEN_ERROR";
+                                        throw err;
+                                }
+                        }
+                        else {
+                                if (accountText.match(/^(?:\s*\w+\s*=\s*[^;]*;?)+/)) {
+                                        spin = createOraDots(getText('login', 'loginCookieString'));
+                                        spin._start();
+                                        appState = accountText.split(';')
+                                                .map(i => {
+                                                        const [key, value] = i.split('=');
+                                                        return {
+                                                                key: (key || "").trim(),
+                                                                value: (value || "").trim(),
+                                                                domain: "facebook.com",
+                                                                path: "/",
+                                                                hostOnly: true,
+                                                                creation: new Date().toISOString(),
+                                                                lastAccessed: new Date().toISOString()
+                                                        };
+                                                })
+                                                .filter(i => i.key && i.value && i.key != "x-referer");
+                                }
+                                else if (isNetScapeCookie(accountText)) {
+                                        spin = createOraDots(getText('login', 'loginCookieNetscape'));
+                                        spin._start();
+                                        appState = netScapeToCookies(accountText);
+                                }
+                                else if (
+                                        (splitAccountText.length == 2 || splitAccountText.length == 3) &&
+                                        !splitAccountText.slice(0, 2).map(i => i.trim()).some(i => i.includes(' '))
+                                ) {
+                                        global.GoatBot.config.facebookAccount.email = splitAccountText[0];
+                                        global.GoatBot.config.facebookAccount.password = splitAccountText[1];
+                                        if (splitAccountText[2]) {
+                                                const code2FATemp = splitAccountText[2].replace(/ /g, "");
+                                                global.GoatBot.config.facebookAccount['2FASecret'] = code2FATemp;
+                                        }
+                                        writeFileSync(global.client.dirConfig, JSON.stringify(global.GoatBot.config, null, 2));
+                                }
+                                else {
+                                        try {
+                                                spin = createOraDots(getText('login', 'loginCookieArray'));
+                                                spin._start();
+                                                appState = JSON.parse(accountText);
+                                        }
+                                        catch (err) {
+                                                const error = new Error(`${path.basename(dirAccount)} is invalid`);
+                                                error.name = "ACCOUNT_ERROR";
+                                                throw error;
+                                        }
+                                }
+                        }
+                } catch (err) {
+                        spin && spin._stop();
+                        if (err.name === "TOKEN_ERROR")
+                                log.err("LOGIN FACEBOOK", getText('login', 'tokenError', colors.green("EAAAA..."), colors.green(dirAccount)));
+                        else if (err.name === "COOKIE_INVALID")
+                                log.err("LOGIN FACEBOOK", getText('login', 'cookieError'));
+                        log.err("LOGIN FACEBOOK", getText('login', 'accountError'), err.message);
+                        process.exit();
+                }
+        }
+
+        if (appState.some(i => i.name))
+                appState = appState.map(i => {
+                        i.key = i.name;
+                        delete i.name;
+                        return i;
+                });
+        else if (!appState.some(i => i.key)) {
+                const error = new Error("AppState is invalid");
+                error.name = "ACCOUNT_ERROR";
+                throw error;
+        }
+        appState = appState
+                .map(item => ({
+                        ...item,
+                        domain: "facebook.com",
+                        path: "/",
+                        hostOnly: false,
+                        creation: new Date().toISOString(),
+                        lastAccessed: new Date().toISOString()
+                }))
+                .filter(i => i.key && i.value && i.key != "x-referer");
+
+        if (!await checkLiveCookie(appState.map(i => i.key + "=" + i.value).join("; "), facebookAccount.userAgent)) {
+                const error = new Error("Cookie is invalid");
+                error.name = "COOKIE_INVALID";
+                throw error;
+        }
+
+        return appState;
 }
 function stopListening(keyListen) {
 keyListen = keyListen || Object.keys(callbackListenTime).pop();
@@ -504,17 +517,17 @@ catch (err) {
 log.err("ERROR", "Can't get notifications data");
 process.exit();
 }
-if (global.GoatBot.config.autoRefreshFbstate == true) {
-changeFbStateByCode = true;
-try {
-writeFileSync(dirAccount, JSON.stringify(filterKeysAppState(api.getAppState()), null, 2));
-log.info("REFRESH FBSTATE", getText('login', 'refreshFbstateSuccess', path.basename(dirAccount)));
-}
-catch (err) {
-log.warn("REFRESH FBSTATE", getText('login', 'refreshFbstateError', path.basename(dirAccount)), err);
-}
-setTimeout(() => changeFbStateByCode = false, 1000);
-}
+                if (global.GoatBot.config.autoRefreshFbstate == true && !process.env.FB_APPSTATE) {
+                        changeFbStateByCode = true;
+                        try {
+                                writeFileSync(dirAccount, JSON.stringify(filterKeysAppState(api.getAppState()), null, 2));
+                                log.info("REFRESH FBSTATE", getText('login', 'refreshFbstateSuccess', path.basename(dirAccount)));
+                        }
+                        catch (err) {
+                                log.warn("REFRESH FBSTATE", getText('login', 'refreshFbstateError', path.basename(dirAccount)), err);
+                        }
+                        setTimeout(() => changeFbStateByCode = false, 1000);
+                }
 if (hasBanned == true) {
 log.err('GBAN', getText('login', 'youAreBanned'));
 process.exit();
