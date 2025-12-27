@@ -1,9 +1,5 @@
 const axios = require("axios");
 
-/**
- * 🔴 ROOT FIX
- * GoatBot V2 DOES NOT auto-create onReply map
- */
 if (!global.GoatBot.onReply) {
   global.GoatBot.onReply = new Map();
 }
@@ -11,16 +7,17 @@ if (!global.GoatBot.onReply) {
 module.exports = {
   config: {
     name: "music",
-    version: "2.3.0",
+    version: "2.4.0",
     author: "April Manalo (YT Search + YTMP3)",
     role: 0,
     category: "music",
     guide: "-music <song name>"
   },
 
-  // ===================== START COMMAND =====================
+  // ================= START =================
   onStart: async function ({ api, event, args }) {
-    const { threadID, senderID } = event;
+    const threadID = String(event.threadID);
+    const senderID = String(event.senderID);
     const query = args.join(" ").trim();
 
     try {
@@ -31,9 +28,11 @@ module.exports = {
         );
       }
 
-      await api.sendMessage("🔎 Searching music on YouTube...", threadID);
+      await api.sendMessage(
+        "🔎 Searching music on YouTube...",
+        threadID
+      );
 
-      // 🔍 YOUTUBE SEARCH
       const searchRes = await axios.get(
         "https://norch-project.gleeze.com/api/youtube",
         { params: { q: query } }
@@ -44,101 +43,91 @@ module.exports = {
         return api.sendMessage("❌ No results found.", threadID);
       }
 
-      // 🎵 TOP 5 RESULTS
       const topResults = results.slice(0, 5);
-      let msg = "🎵 Select a song to download:\n\n";
+      let msg = "🎵 Select a song:\n\n";
 
       topResults.forEach((v, i) => {
-        msg += `${i + 1}. ${v.title}\n`;
-        msg += `📺 ${v.channel}\n`;
-        msg += `⏱ ${v.duration}\n\n`;
+        msg += `${i + 1}. ${v.title}\n📺 ${v.channel}\n⏱ ${v.duration}\n\n`;
       });
 
-      msg += "💬 Reply with the number (1-5).";
+      msg += "💬 Reply with number (1-5)";
 
       api.sendMessage(msg, threadID, (err, info) => {
         if (err) return console.error(err);
 
-        global.GoatBot.onReply.set(info.messageID, {
+        global.GoatBot.onReply.set(String(info.messageID), {
           commandName: "music",
-          messageID: info.messageID,
+          messageID: String(info.messageID),
           author: senderID,
           results: topResults
         });
       });
 
-    } catch (err) {
-      console.error("[MUSIC ERROR]", err);
-      api.sendMessage("❌ Error while searching. Try again later.", threadID);
+    } catch (e) {
+      console.error("[MUSIC ERROR]", e);
+      api.sendMessage("❌ Error occurred.", threadID);
     }
   },
 
-  // ===================== HANDLE REPLY =====================
+  // ================= REPLY =================
   onReply: async function ({ api, event, Reply }) {
-    const { threadID, body, senderID } = event;
-    const { author, results, messageID } = Reply;
+    const threadID = String(event.threadID);
+    const senderID = String(event.senderID);
 
-    if (senderID !== author) return;
+    if (senderID !== Reply.author) return;
 
-    const choice = parseInt(body);
-    if (isNaN(choice) || choice < 1 || choice > results.length) {
-      return api.sendMessage(
-        `⚠️ Invalid choice. Reply 1-${results.length} only.`,
-        threadID
-      );
+    const choice = parseInt(event.body);
+    if (isNaN(choice) || choice < 1 || choice > Reply.results.length) {
+      return api.sendMessage("⚠️ Invalid choice.", threadID);
     }
 
-    const video = results[choice - 1];
+    const video = Reply.results[choice - 1];
 
-    // 🧹 Remove menu
     try {
-      api.unsendMessage(messageID);
+      api.unsendMessage(String(Reply.messageID));
     } catch (_) {}
 
     try {
       await api.sendMessage(
-        `✅ Selected:\n🎧 ${video.title}\n⬇️ Downloading audio...`,
+        `⬇️ Downloading:\n🎧 ${video.title}`,
         threadID
       );
 
-      // ⬇️ YTMP3
-      const dlRes = await axios.get(
+      const dl = await axios.get(
         "https://norch-project.gleeze.com/api/ytmp3",
         { params: { url: video.url } }
       );
 
-      const data = dlRes.data?.result;
-      if (!data || !data.downloadUrl) {
-        return api.sendMessage("❌ Failed to get MP3 link.", threadID);
+      const data = dl.data?.result;
+      if (!data?.downloadUrl) {
+        return api.sendMessage("❌ Download failed.", threadID);
       }
 
-      // 🖼 COVER
       if (data.cover) {
         await api.sendMessage(
           {
-            body: `🎵 ${data.title}\n⏱ ${data.duration}\n🎼 ${data.quality}kbps`,
+            body: `🎵 ${data.title}\n⏱ ${data.duration}`,
             attachment: await global.utils.getStreamFromURL(data.cover)
           },
           threadID
         );
       }
 
-      // 🎶 AUDIO
       await api.sendMessage(
         {
-          body: "📁 Here is your audio:",
+          body: "📁 Audio file:",
           attachment: await global.utils.getStreamFromURL(data.downloadUrl)
         },
         threadID
       );
 
-      await api.sendMessage("✅ Download complete! 🎉", threadID);
+      api.sendMessage("✅ Done!", threadID);
 
-    } catch (err) {
-      console.error("[MUSIC DL ERROR]", err);
+    } catch (e) {
+      console.error("[MUSIC DL ERROR]", e);
       api.sendMessage("❌ Error while downloading.", threadID);
     }
 
-    global.GoatBot.onReply.delete(messageID);
+    global.GoatBot.onReply.delete(String(Reply.messageID));
   }
 };
