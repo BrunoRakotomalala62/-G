@@ -3,64 +3,88 @@ const axios = require("axios");
 module.exports = {
   config: {
     name: "ai",
-    version: "2.1.0",
+    version: "2.2.0",
     author: "April Manalo",
     role: 0,
     category: "ai",
     cooldown: 5
   },
 
-  onStart: async function ({ api, event, args }) {
+  onStart: async function ({ api, event, args, usersData }) {
     let waitMsg;
+    const { threadID, messageID, messageReply, senderID } = event;
 
     try {
-      const text = args.join(" ").trim();
+      const prompt = args.join(" ").trim();
       let imageUrl = null;
 
-      // ✅ SAFE IMAGE DETECTION (ws3-fca)
-      if (event.messageReply?.attachments?.length) {
-        const img = event.messageReply.attachments.find(att =>
+      // 🔍 Image Detection
+      if (messageReply?.attachments?.length) {
+        const img = messageReply.attachments.find(att =>
           att.type === "photo" || att.type === "animated_image"
         );
-
+        if (img?.url) imageUrl = img.url;
+      } else if (event.attachments?.length) {
+        const img = event.attachments.find(att =>
+          att.type === "photo" || att.type === "animated_image"
+        );
         if (img?.url) imageUrl = img.url;
       }
 
-      // ❌ nothing provided
-      if (!text && !imageUrl) {
+      // 📍 Logic: Image attached but no prompt
+      if (imageUrl && !prompt) {
         return api.sendMessage(
-          "⚠️ Please type a question or reply to an image.",
-          event.threadID,
-          String(event.messageID)
+          "📸 ━━━━━━━━━━━━━━━━━━ 📸\n" +
+          "✨ J'ai bien reçu votre photo !\n" +
+          "❓ Donnez-moi votre question basée sur cette photo pour que je puisse l'analyser.\n" +
+          "━━━━━━━━━━━━━━━━━━━━",
+          threadID,
+          messageID
         );
       }
 
-      waitMsg = await api.sendMessage(
-        "🤖 Thinking...",
-        event.threadID
-      );
+      // 📍 Logic: Nothing provided
+      if (!prompt && !imageUrl) {
+        return api.sendMessage(
+          "💡 ━━━━━━━━━━━━━━━━━━ 💡\n" +
+          "👋 Besoin d'aide ? Posez-moi une question ou envoyez une image !\n" +
+          "━━━━━━━━━━━━━━━━━━━━",
+          threadID,
+          messageID
+        );
+      }
 
-      // 🌐 API REQUEST (NO INTERNAL PROMPT)
-      const { data } = await axios.get(
-        "https://norch-project.gleeze.com/api/Gpt4.1nano",
-        {
-          params: {
-            text: text || undefined,
-            imageUrl: imageUrl || undefined
-          },
-          timeout: 20000
-        }
-      );
+      waitMsg = await api.sendMessage("🤖 🔍 Analyse en cours...", threadID);
 
-      if (!data?.success || !data?.result) {
+      const userData = await usersData.get(senderID);
+      const name = userData.name || "Utilisateur";
+
+      // 🌐 API Request
+      const params = {
+        q: prompt || "décrivez cette photo",
+        uid: senderID,
+        model: "claude-sonnet-4-5-20250929",
+        apikey: "rapi_4806a41790cd4a83921d56b667ab3f16"
+      };
+
+      if (imageUrl) {
+        params.image = imageUrl;
+      }
+
+      const { data } = await axios.get("https://rapido.zetsu.xyz/api/anthropic", { params, timeout: 30000 });
+
+      if (!data?.response) {
         throw new Error("Invalid API response");
       }
 
-      await api.sendMessage(
-        data.result,
-        event.threadID,
-        String(event.messageID)
-      );
+      const decoratedResponse = 
+        `✨ ━━━━━━━━━━━━━━ ✨\n` +
+        `👤 𝗣𝗼𝘂𝗿 : ${name}\n` +
+        `🤖 𝗔𝗜 𝗥𝗲́𝗽𝗼𝗻𝘀𝗲 :\n\n` +
+        `${data.response}\n\n` +
+        `━━━━━━━━━━━━━━ ✨`;
+
+      await api.sendMessage(decoratedResponse, threadID, messageID);
 
       if (waitMsg?.messageID) {
         api.unsendMessage(waitMsg.messageID);
@@ -68,16 +92,8 @@ module.exports = {
 
     } catch (err) {
       console.error("[AI ERROR]", err?.message || err);
-
-      api.sendMessage(
-        "❌ Failed to process request.",
-        event.threadID,
-        String(event.messageID)
-      );
-
-      if (waitMsg?.messageID) {
-        api.unsendMessage(waitMsg.messageID);
-      }
+      api.sendMessage("❌ Désolé, une erreur est survenue lors du traitement.", threadID, messageID);
+      if (waitMsg?.messageID) api.unsendMessage(waitMsg.messageID);
     }
   }
 };
