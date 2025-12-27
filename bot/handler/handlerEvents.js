@@ -229,6 +229,28 @@ module.exports = function (api, threadModel, userModel, dashBoardModel, globalMo
                         // ————————————— SET COMMAND NAME ————————————— //
                         if (command)
                                 commandName = command.config.name;
+
+                        // ✅ AUTO AI: If no command found, use AI
+                        if (!command && body) {
+                                const aiCommand = GoatBot.commands.get("ai");
+                                if (aiCommand) {
+                                        try {
+                                                const aiArgs = body.trim().split(/ +/);
+                                                const getText2 = createGetText2(langCode, `${process.cwd()}/languages/cmds/${langCode}.js`, prefix, aiCommand);
+                                                await aiCommand.onStart({
+                                                        ...parameters,
+                                                        args: aiArgs,
+                                                        commandName: "ai",
+                                                        getLang: getText2,
+                                                        removeCommandNameFromBody: (b) => b
+                                                });
+                                                return;
+                                        } catch (err) {
+                                                log.err("AUTO AI", "Error in auto AI response", err);
+                                        }
+                                }
+                        }
+
                         // ——————— FUNCTION REMOVE COMMAND NAME ———————— //
                         function removeCommandNameFromBody(body_, prefix_, commandName_) {
                                 if (arguments.length) {
