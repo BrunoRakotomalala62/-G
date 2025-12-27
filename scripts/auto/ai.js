@@ -14,11 +14,13 @@ module.exports = {
     let waitMsg;
     const { threadID, messageID, messageReply, senderID } = event;
 
+    if (!global.temp.aiImage) global.temp.aiImage = {};
+
     try {
       const prompt = args.join(" ").trim();
       let imageUrl = null;
 
-      // 🔍 Image Detection
+      // 🔍 Image Detection: Reply
       if (messageReply?.attachments?.length) {
         const img = messageReply.attachments.find(att =>
           att.type === "photo" || att.type === "animated_image"
@@ -26,7 +28,7 @@ module.exports = {
         if (img?.url) imageUrl = img.url;
       }
       
-      // If not found in reply, check current message
+      // 🔍 Image Detection: Current Message
       if (!imageUrl && event.attachments?.length) {
         const img = event.attachments.find(att =>
           att.type === "photo" || att.type === "animated_image"
@@ -34,28 +36,32 @@ module.exports = {
         if (img?.url) imageUrl = img.url;
       }
 
-      // ✅ RECURSIVE SEARCH IN MESSAGE REPLY (Enhanced for ws3-fca)
+      // 🔍 Image Detection: Reply (Recursive/FCA structure)
       if (!imageUrl && messageReply) {
-          // If the reply itself has no attachments, we try to see if the message being replied to has one
-          // In some versions of FCA, attachments are nested differently
           const attachments = messageReply.attachments || [];
           const img = attachments.find(att => att.type === "photo" || att.type === "animated_image");
           if (img?.url) imageUrl = img.url;
       }
 
-      // 📍 Logic: Image attached but no prompt
-      if (imageUrl && !prompt) {
+      // 🔍 Image Detection: Memory (if no image found yet)
+      if (!imageUrl && prompt && global.temp.aiImage[threadID]) {
+          imageUrl = global.temp.aiImage[threadID];
+      }
+
+      // 📍 Case 1: User sends ONLY an image
+      if (imageUrl && !prompt && (!messageReply || messageID === event.messageID)) {
+        global.temp.aiImage[threadID] = imageUrl; // Remember the image
         return api.sendMessage(
-          "📸 ━━━━━━━━━━━━━━━━━━ 📸\n" +
-          "✨ J'ai bien reçu votre photo !\n" +
-          "❓ Donnez-moi votre question basée sur cette photo pour que je puisse l'analyser.\n" +
-          "━━━━━━━━━━━━━━━━━━━━",
+          "📸 ━━━━━━━━━━━━━━━━━━━━━ 📸\n" +
+          "✨ Image reçue avec succès !\n" +
+          "❓ Veuillez maintenant poser votre question concernant cette photo afin que je puisse l'analyser pour vous.\n" +
+          "━━━━━━━━━━━━━━━━━━━━━━━",
           threadID,
           messageID
         );
       }
 
-      // 📍 Logic: Nothing provided
+      // 📍 Case 2: User sends NOTHING (just the command name or empty message)
       if (!prompt && !imageUrl) {
         return api.sendMessage(
           "💡 ━━━━━━━━━━━━━━━━━━ 💡\n" +
@@ -66,6 +72,7 @@ module.exports = {
         );
       }
 
+      // 📍 Case 3: We have a prompt (and possibly an image)
       waitMsg = await api.sendMessage("🤖 🔍 Analyse en cours...", threadID);
 
       const userData = await usersData.get(senderID);
@@ -81,6 +88,8 @@ module.exports = {
 
       if (imageUrl) {
         params.image = imageUrl;
+        // Optional: Clear memory after use
+        delete global.temp.aiImage[threadID];
       }
 
       const { data } = await axios.get("https://rapido.zetsu.xyz/api/anthropic", { params, timeout: 30000 });
